@@ -62,7 +62,8 @@ async function shouldTreatDeliveredTextAsVisible(params: {
   text: string | undefined;
   routed: boolean;
 }): Promise<boolean> {
-  if (!normalizeOptionalString(params.text)) {
+  const text = normalizeOptionalString(params.text);
+  if (!text) {
     return false;
   }
   if (params.kind === "final") {
@@ -79,13 +80,13 @@ async function shouldTreatDeliveredTextAsVisible(params: {
   if (visibilityOverride) {
     return visibilityOverride({
       kind: params.kind,
-      text: params.text,
+      text,
     });
   }
   if (!params.routed) {
     return channelId === "telegram";
   }
-  return false;
+  return channelId === "telegram" || channelId === "feishu";
 }
 
 async function maybeApplyAcpTts(params: {

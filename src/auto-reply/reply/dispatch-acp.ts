@@ -192,11 +192,13 @@ async function finalizeAcpTurnOutput(params: {
   shouldEmitResolvedIdentityNotice: boolean;
 }): Promise<boolean> {
   await params.delivery.settleVisibleText();
-  let queuedFinal =
-    params.delivery.hasDeliveredVisibleText() && !params.delivery.hasFailedVisibleTextDelivery();
+  const deliveredVisibleText = params.delivery.hasDeliveredVisibleText();
+  const failedVisibleTextDelivery = params.delivery.hasFailedVisibleTextDelivery();
+  let queuedFinal = deliveredVisibleText && !failedVisibleTextDelivery;
   const ttsMode = resolveConfiguredTtsMode(params.cfg);
   const accumulatedBlockText = params.delivery.getAccumulatedBlockText();
   const hasAccumulatedBlockText = accumulatedBlockText.trim().length > 0;
+  const isFeishuDelivery = params.sessionKey.includes(":feishu:");
   const ttsStatus = resolveStatusTtsSnapshot({
     cfg: params.cfg,
     sessionAuto: params.sessionTtsAuto,
@@ -235,6 +237,7 @@ async function finalizeAcpTurnOutput(params: {
     ttsMode !== "all" &&
     hasAccumulatedBlockText &&
     !finalMediaDelivered &&
+    !isFeishuDelivery &&
     !params.delivery.hasDeliveredFinalReply() &&
     (!params.delivery.hasDeliveredVisibleText() || params.delivery.hasFailedVisibleTextDelivery());
   if (shouldDeliverTextFallback) {
